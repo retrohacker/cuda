@@ -1,0 +1,19 @@
+NVCC = nvcc
+NVCC_FLAGS = -O3 -I/usr/local/cuda-5.5/include
+LD_FLAGS = -lcudart -L/usr/local/cuda-5.5/lib64
+EXE = a.out
+OBJ = main.o
+
+default: $(EXE)
+
+main.o: main.cu
+	$(NVCC) -c -o $@ main.cu $(NVCC_FLAGS)
+
+$(EXE): $(OBJ)
+	$(NVCC) $(OBJ) -o $(EXE) #$(LD_FLAGS)
+
+clean:
+	rm -rf *.o $(EXE)
+
+run: $(EXE)
+	./a.out
