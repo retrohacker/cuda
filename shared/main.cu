@@ -70,8 +70,10 @@ void print_matrix(float *a,int cols,int rows) {
 }
 
 __global__ void kernel(float *a,float *b,float *result) {
+  bool extra_a;
   int row = blockIdx.x,
       col = threadIdx.x,
+      a_count,
       offset,
       i;
 
@@ -86,9 +88,11 @@ __global__ void kernel(float *a,float *b,float *result) {
    * 1. An entire column from table b
    * 2. Thread 0 loads row from a
    */
-  if(threadIdx.x==0)
-    for(i=0;i<M;i++)
-      local_a[i] = a[row*M+i];
+  extra_a = M%blockDim.x>0&&M%blockDim.x<threadIdx.x;
+  a_count = (extra_a)?M/blockDim.x+1:M/blockDim.x;
+  offset  = (extra_a)?a_count*threadIdx.x:a_count*threadIdx.x+M%blockDim.x;
+  for(i=0;i<a_count;i++)
+    local_a[offset+i] = a[row*M+offset+i];
 
   for(i=0;i<P;i++) {
     offset = i*N+threadIdx.x;
